@@ -1,0 +1,24 @@
+/* git core 설치 */
+sudo apt-get -y install git-core
+
+/* zsh 설치하기 */
+for Ubuntu, the procedure a little different.
+
+1. sudo apt-get install zsh
+
+2. curl -L https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh | sudo sh
+
+can skip this… if point 2 is done correctly.
+
+3. sudo chsh -s /bin/zsh
+
+check whether your bash is correct
+$cat /etc/passwd
+
+You should have root and ubuntu (for ec2 user) set properly
+root:x:0:0:root:/root:/bin/zsh
+ubuntu:x:1000:1000:Ubuntu,,,:/home/ubuntu:/bin/zsh
+
+if yours is still bin/bash, then you need to manually change for ubuntu user
+$sudo su
+#chsh -s /bin/zsh ubuntu

@@ -1,0 +1,14 @@
+AWS EC2 web server 의 인코딩 문제는 4군데의 configuration 을 잘 설정해줘야 한다.
+1. Apache configuration(in httpd.conf or .htaccess)
+  AddDefaultCharset utf-8
+2. PHP(on php.ini)
+ /* Data Handling 파트 아래부분에 위치함 */
+  default_charset = “utf-8”
+  mbstring.internal_encoding=utf-8
+  mbstring.http_output=UTF-8
+  mbstring.encoding_translation=On
+  mbstring.func_overload=6
+3.MySQL
+  utf-8 로 모든 설정
+4.HTML
+  <meta http-equiv=“Content-Type” content=“text/html; charset=utf-8”>

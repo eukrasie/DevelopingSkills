@@ -1,0 +1,103 @@
+/* if re-launch EC2 instance and try to access with same ssh, access could be denied, then remove ssh key info from known_host file */
+$ssh-keygen -R 52.74.218.13
+
+/* install LAMP stack on ubuntu server */
+$sudo apt-get update
+$sudo apt-get install lamp-server^
+$sudo apt-get install phpmyadmin
+
+/* to access /phpmyadmin in your browser, you will need to add phpmyadmin to the apache configuration by executing the following command. 
+*/
+$sudo nano /etc/apache2/apache2.conf
+
+/* 아래 세 줄을 파일의 맨 밑에 붙이고 저장한다(하는김에 charset까지 utf8로) */
+# Include web access to phpmyadmin
+Include /etc/phpmyadmin/apache.conf
+AddDefaultCharset utf-8
+
+$sudo service apache2 restart
+
+/* php.ini 설정을 utf8 로 변환 */
+/*(on php.ini) 어디에 있는지는 phpinfo()보면 알수있다 */
+ /* Data Handling 파트 아래부분에 위치함 */
+  default_charset = “utf-8”
+  mbstring.internal_encoding=utf-8
+  mbstring.http_output=UTF-8
+  mbstring.encoding_translation=On
+  mbstring.func_overload=6
+
+/* Mysql 의 언어세팅을 utf8로 */
+sudo nano /etc/mysql/my.cnf 
+
+  [client]
+  default-character-set = utf8
+
+  [mysqld]
+  character-set-client-handshake=FALSE
+  init_connect="SET collation_connection = utf8_general_ci"
+  init_connect="SET NAMES utf8"
+  character-set-server = utf8 
+  collation-server = utf8_general_ci
+
+  [mysqldump]
+  default-character-set = utf8
+
+  [mysql]
+  default-character-set = utf8
+
+sudo service mysql restart
+mysql> status /* 로 변화했는지 확인 */
+
+
+/*ubuntu의 web document folder도 /var/www/html 이다 */
+/* /var/www 안에 example.com 같은 식으로 virtual host용 folder를 만들어준다 */
+$sudo mkdir -p /var/www/example.com
+
+/* 디렉토리를 root user권한으로 만들었으니, regular user도 접근 할수 있도록 permission을 바꿔준다 */
+$sudo chown -R $USER:$USER /var/www/example.com
+
+/* We should also modify our permissions a little bit to ensure that read access is permitted to the general web directory and all of the files and folders it contains so that pages can be served correctly: */
+
+$sudo chmod -R 755 /var/www
+/* virtual host folder 안에 시작페이지 만들어준다 */
+$sudo nano /var/www/example.com/index.html
+<html>
+  <head>
+    <title>Welcome to Example.com!</title>
+  </head>
+  <body>
+    <h1>Success!  The example.com virtual host is working!</h1>
+  </body>
+</html>
+
+/* 000-default.conf 라는 기본 virtual host configuration file을 가지는데 이 파일은 document root 를 /var/www/html 로 향하고 있다. 이 conf 파일을, 새로 추가될 virtual host 이름으로 바꿔서 복사한다. */ 
+$sudo cp /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/example.com.conf
+
+/* 새 conf 파일을 열고 */
+$sudo nano /etc/apache2/sites-available/example.com.conf
+
+/* 내용이 다음과 같게 수정한다 */
+<VirtualHost *:80>
+    ServerAdmin admin@example.com
+    ServerName example.com
+    ServerAlias www.example.com
+    DocumentRoot /var/www/example.com
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+
+/* Now that we have created our virtual host files, we must enable them. Apache includes some tools that allow us to do this.
+ We can use the a2ensite tool to enable each of our sites like this: */
+
+$sudo a2ensite example.com.conf
+$sudo a2ensite test.com.conf
+
+/* When you are finished, you need to restart Apache to make these changes take effect: */
+
+$sudo service apache2 restart
+
+/* You will most likely receive a message 	saying something similar to:
+
+/* Restarting web server apache2
+ AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.0.1. Set the 'ServerName' directive globally to suppress this message
+This is a harmless message that does not affect our site. */

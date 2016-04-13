@@ -1,0 +1,57 @@
+/* ubuntu Mysql character set utf-8로 setting */
+sudo nano /etc/mysql/my.cnf
+
+  [client]
+  default-character-set = utf8
+
+  [mysqld]
+  character-set-client-handshake=FALSE
+  init_connect="SET collation_connection = utf8_general_ci"
+  init_connect="SET NAMES utf8"
+  character-set-server = utf8 
+  collation-server = utf8_general_ci
+
+  [mysqldump]
+  default-character-set = utf8
+
+  [mysql]
+  default-character-set = utf8
+
+
+/*수정 하고 mysql 재시작 */
+sudo service mysql restart
+
+/*mysql console 에서 setting 확인 */
+mysql -uroot -p
+mysql> show variables like '%char%';
+
+/* 한글로 잘 작동되고있는 instance 에서 locale 해보니 */
+[ec2-user@ip-172-31-3-34 www]$ locale
+LANG=ko_KR.UTF-8
+LC_CTYPE="ko_KR.UTF-8"
+LC_NUMERIC="ko_KR.UTF-8"
+LC_TIME="ko_KR.UTF-8"
+LC_COLLATE="ko_KR.UTF-8"
+LC_MONETARY="ko_KR.UTF-8"
+LC_MESSAGES="ko_KR.UTF-8"
+LC_PAPER="ko_KR.UTF-8"
+LC_NAME="ko_KR.UTF-8"
+LC_ADDRESS="ko_KR.UTF-8"
+LC_TELEPHONE="ko_KR.UTF-8"
+LC_MEASUREMENT="ko_KR.UTF-8"
+LC_IDENTIFICATION="ko_KR.UTF-8"
+LC_ALL=
+/* 이렇게 나온다 */
+
+/* 우선 첫번째 할 일은 한글 입력 패키지를 다운받아 설치해야한다. apt-get으로 간단히 설치할 수 있는데, 문제는 어떤 패키지가 있는지 알기 힘들다는것... 구글링 결과 여러가지 썰이 있었는데 아래의 것을 설치하면 된다.*/
+$ sudo apt-get install language-pack-ko
+
+/* 다음으로 시스템 전체의 locale을 변경한 후 설정한다.*/
+$ sudo locale-gen ko_KR.UTF-8
+$ sudo dpkg-reconfigure locales
+
+/* 그리고 다음번 부팅할 때도 기본적으로 한글을 사용하기 위해 /etc/default/locale 파일을 아래와 같이 변경해준다. */
+    LANG="ko_KR.UTF-8"
+    LANGUAGE="ko_KR:ko:en_US:en"
+
+/* 이제 다시 접속할 때마다 자동으로 한글을 사용할 수 있다.*/

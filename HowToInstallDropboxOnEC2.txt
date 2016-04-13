@@ -1,0 +1,56 @@
+1. 홈디렉토리로 간다 > 
+$cd
+
+2. 64bit 드롭박스를 다운받는다 > 
+$ wget -O dropbox.tar.gz "http://www.dropbox.com/download/?plat=lnx.x86_64"
+
+3. sanity check를 하고 > 
+$ tar -tzf dropbox.tar.gz
+
+4. 압축을 푼다 > 
+$ tar -xvzf dropbox.tar.gz
+
+5. 드롭박스 daemon 을 돌린다 > 
+$ ~/.dropbox-dist/dropboxd
+
+6. This client is not linked to any account… Please visit https://www.dropbox.com/cli_link?host_id=7d44a557aa58f285f2da0x67334d02c1 to link this machine.
+이런 메세지가 나오면 url 을 복사해서 그곳에 가서 승인한다(계정을 연결시키는단계)
+
+7. dropbox 를 관리할 수 있는 파이썬 스크립트를 다운받는다
+$ mkdir -p ~/bin
+$ wget -O ~/bin/dropbox.py "http://www.dropbox.com/download?dl=packages/dropbox.py"
+$ chmod 755 ~/bin/dropbox.py
+$ python ~/bin/dropbox.py help (파이썬 명령으로 해야 파이썬 스크립트가 실행된다)
+
+8. 드롭박스를 작동시키는 명령
+$ python ~/bin/dropbox.py dropbox start
+
+9. 드롭박스를 작동 중지 시키는 명령
+$ python ~/bin/dropbox.py dropbox stop
+
+10. EC2에서 Dropbox 폴더는 기본적으로 ~/Dropbox 로 설정되는데 이걸 다른 폴더로 바꾸는 방법에 두가지가 있다.
+1) 드롭박스 폴더 location을 바꾸는 방법
+$ python ~/bin/dropbox.py dropbox stop
+$ cp ~/.dropbox/dropbox.db dropbox.db.backup
+$ wget http://dl.dropbox.com/u/119154/permalink/dropboxdir.py
+$ chmod +x dropboxdir.py
+$ mv ~/Dropbox /foo/bar $ ./dropboxdir –setfolder=/foo/bar
+$ python ~/bin/dropbox.py dropbox start
+
+2) symbolic link를 사용해서 folder location을 바꾸는 방법 (더 간단하다)
+$ python ~/bin/dropbox.py dropbox stop
+$ mv ~/Dropbox /target/folder
+$ ln -s ~/Dropbox/안의/옮길디렉토리 /target/folder/symLink이름
+$ python ~/bin/dropbox.py dropbox start
+이 방법이 간단하기는한데 virtual host documnet root로 이 symlink를 설정하면 
+ownership 바꾸는거나 
+$sudo chown -R $USER:$USER /var/www/example.com
+general web directory에 read permission주는거나
+$sudo chmod -R 755 /var/www
+실행을 해도 symlink라서 어무런 효력이 없다. 타겟인 ~/Dropbox 폴더의 ownership 이나 permission을 바꿔야 효력이 발생한다.
+
+11. 모든 드롭박스 폴더들을 sync 목록에서 제거하는 명령(동기화되지 않도록)
+$ python ~/bin/dropbox.py exclude add ~/Dropbox/*
+
+12. 내가 원하는 폴더를 동기화 시키는 명령
+$ python ~/bin/dropbox.py exclude remove ~/Dropbox/folder_name
